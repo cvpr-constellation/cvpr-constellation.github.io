@@ -2,7 +2,7 @@
 
 An interactive keyword co-occurrence map of all **4,068 accepted papers at CVPR 2026**, rendered as a navigable "star map" — keywords are stars, co-occurrences are the threads between them, and research communities form star systems.
 
-**Live demo → https://deo-ahn.github.io/cvpr2026-constellation/**
+**Live demo → https://cvpr-constellation.github.io/**
 
 ![screenshot](docs/screenshot.jpg)
 
