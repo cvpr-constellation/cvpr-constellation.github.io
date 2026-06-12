@@ -188,17 +188,25 @@ h1 em{font-style:italic;font-weight:300;color:var(--c1)}
   80%,100%{transform:scale(1.9);stroke-opacity:0;stroke-width:.6}}
 
 /* "now entering" HUD */
-.syshud{position:fixed;z-index:23;top:26px;left:50%;transform:translateX(-50%);
-  text-align:center;pointer-events:none;opacity:0;transition:opacity .35s}
-.syshud.on{opacity:1;animation:hudin .9s cubic-bezier(.16,.8,.26,1)}
-@keyframes hudin{0%{opacity:0;transform:translateX(-50%) translateY(-10px);filter:blur(5px)}
-  100%{opacity:1;transform:translateX(-50%) translateY(0);filter:blur(0)}}
+.syshud{position:fixed;z-index:23;top:26px;left:50%;transform:translateX(-50%) translateY(-8px);
+  text-align:center;pointer-events:none;opacity:0;
+  transition:opacity .45s cubic-bezier(.16,.8,.26,1),transform .45s cubic-bezier(.16,.8,.26,1)}
+.syshud.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .sh-k{font-size:8.5px;letter-spacing:.52em;text-transform:uppercase;color:var(--c2);margin-bottom:5px}
 .sh-k::before,.sh-k::after{content:"·";margin:0 12px;color:var(--dim)}
 .sh-n{font-family:"Fraunces",serif;font-size:29px;line-height:1;letter-spacing:-.01em;
   font-variation-settings:"opsz" 70,"WONK" 1;text-shadow:0 2px 18px rgba(0,0,0,.7)}
 .sh-n em{font-style:italic;font-weight:300;color:var(--muted);font-size:21px}
 .sh-s{margin-top:7px;font-size:9.5px;color:var(--muted);letter-spacing:.08em}
+.sh-path{margin-top:9px;font-size:10.5px;letter-spacing:.06em;display:flex;gap:7px;
+  justify-content:center;align-items:center;pointer-events:auto}
+.sh-seg{cursor:pointer;color:var(--muted);transition:.15s;padding:2px 1px}
+.sh-seg:hover{color:var(--ink);text-decoration:underline}
+.sh-seg.cur{color:var(--ink);font-weight:700;cursor:default}
+.sh-seg.cur:hover{text-decoration:none}
+.sh-sep{color:var(--dim)}
+.ptag{font-size:8px;letter-spacing:.3em;fill:var(--muted);text-transform:uppercase;
+  paint-order:stroke;stroke:var(--bg);stroke-width:3px}
 /* responsive layout: phones & small tablets */
 @media(max-width:860px){
   .masthead{top:10px;left:14px;max-width:74vw}
@@ -231,12 +239,12 @@ h1 em{font-style:italic;font-weight:300;color:var(--c1)}
   .dr-title{font-size:17px}
   .dr-head{padding:11px 14px 9px}
   .syshud{top:10px;left:auto;right:12px;transform:none;text-align:right;max-width:40vw}
-  .syshud.on{animation:none}
   .sh-k{font-size:7px;letter-spacing:.3em;margin-bottom:3px}
   .sh-k::before,.sh-k::after{content:none}
   .sh-n{font-size:15px}
   .sh-n em{font-size:12px}
   .sh-s{display:none}
+  .sh-path{margin-top:5px;font-size:8.5px;justify-content:flex-end;gap:5px}
   .reset{left:auto;right:10px;bottom:14px;transform:none;padding:8px 14px;font-size:9.5px}
   /* keyboard open: results move up under the search bar so they stay visible */
   body.kb .masthead,body.kb .legend,body.kb .reset{opacity:.15;pointer-events:none}
@@ -344,6 +352,7 @@ html.light .lite .drawer{background:rgba(251,248,241,.96)}
   <div class="sh-k">Now Entering</div>
   <div class="sh-n" id="sh-name">—</div>
   <div class="sh-s" id="sh-sub"></div>
+  <div class="sh-path" id="sh-path"></div>
 </div>
 
 <button class="reset" id="reset">↺ reset view</button>
@@ -556,6 +565,7 @@ fetch("papers.json").then(r=>r.json()).then(p=>{PAPERS=p;}).catch(()=>{PAPERS=[]
 let focused=false, curKeep=null, curAccent=null;
 function setHighlight(keep,accent){curKeep=keep;curAccent=accent;applyHL(keep,accent);}
 function applyHL(keep,accent){
+  node.attr("stroke-dasharray",null);
   if(!keep){node.style("opacity",1);label.style("opacity",d=>d.count>=LABEL_MIN?.92:0);
     link.style("stroke",null).style("stroke-opacity",null);
     node.attr("stroke",NSTR()).attr("stroke-width",.6);
@@ -687,8 +697,24 @@ function showHUD(name,col,sub,sfx){
 function hideHUD(){hud.classList.remove("on");}
 
 /* ---------- system mode: radial re-layout around a keyword ---------- */
-let systemNode=null;
+let systemNode=null, sysPath=[];
 const GOLD=Math.PI*(3-Math.sqrt(5));
+/* breadcrumb: all › Video › Grounding — click a segment to climb back up */
+function renderPath(){
+  const p=document.getElementById("sh-path"); if(!p)return;
+  if(!sysPath.length){p.innerHTML="";return;}
+  let h='<span class="sh-seg" data-i="-1">all</span>';
+  sysPath.forEach((id,i)=>{h+='<span class="sh-sep">›</span>'
+    +`<span class="sh-seg${i===sysPath.length-1?" cur":""}" data-i="${i}">${id}</span>`;});
+  p.innerHTML=h;
+}
+document.getElementById("sh-path").addEventListener("click",e=>{
+  const s=e.target.closest(".sh-seg"); if(!s)return;
+  const i=+s.dataset.i;
+  if(i<0){resetView();return;}
+  if(i>=sysPath.length-1)return;
+  const n=byId.get(sysPath[i]); if(n)enterSystem(n);
+});
 function exitSystem(){
   if(!systemNode)return;
   systemNode.fx=null;systemNode.fy=null;systemNode=null;
@@ -697,6 +723,13 @@ function exitSystem(){
   baseForces();sim.alpha(.55).restart();
 }
 function enterSystem(d){
+  /* breadcrumb path: climbing back truncates; drilling into a neighbour appends */
+  const prev=systemNode;
+  const pi=sysPath.indexOf(d.id);
+  if(pi>=0)sysPath=sysPath.slice(0,pi+1);
+  else if(prev&&nbrIds(prev.id).has(d.id))sysPath=[...sysPath,d.id];
+  else sysPath=[d.id];
+  const parentId=sysPath.length>1?sysPath[sysPath.length-2]:null;
   exitSystem();
   systemNode=d;
   const nb=adj.get(d.id);                       /* sorted by weight desc */
@@ -709,6 +742,8 @@ function enterSystem(d){
   const TGT=new Map();
   nb.forEach((o,i)=>{const a=i*GOLD-Math.PI/2,r=rr(o.w);
     TGT.set(o.id,[CX+Math.cos(a)*r,CY+Math.sin(a)*r]);});
+  /* parent system pinned at 12 o'clock, outside the orbits */
+  if(parentId&&TGT.has(parentId))TGT.set(parentId,[CX,CY-R*1.02]);
   d.fx=CX;d.fy=CY;
   sim.force("link",null)
      .force("charge",d3.forceManyBody().strength(n=>keep.has(n.id)?-70:0).distanceMax(420))
@@ -727,15 +762,24 @@ function enterSystem(d){
     .transition().duration(700).delay(80).attr("r",rScale(d.count)+13).style("stroke-opacity",.35);
   /* visuals + drawer */
   setHighlight(keep,d.id);showDetail(d);
+  /* parent system: dashed accent ring + tag above its pinned spot */
+  if(parentId){
+    node.filter(n=>n.id===parentId)
+      .attr("stroke",ACC()).attr("stroke-width",1.5).attr("stroke-dasharray","4 3");
+    const pn=byId.get(parentId);
+    orbitG.append("text").attr("class","ptag").attr("text-anchor","middle")
+      .attr("x",CX).attr("y",CY-R*1.02-rScale(pn.count)-12).text("↑ parent system");
+  }
   markFocused(nb.length+" linked keywords");
   svg.transition().duration(750).call(zoom.transform,d3.zoomIdentity);
   showHUD(d.id,col,`${nb.length} connected keywords · ${d.count.toLocaleString()} papers · esc to leave`);
+  renderPath();
   drKick.textContent="Star System";
   openDrawer(d.id,col,papersWithKw(nodeIndex.get(d.id)));
 }
 
 function openCluster(i){
-  exitSystem();
+  exitSystem();sysPath=[];renderPath();
   const ids=nodes.filter(n=>grp(n)===i).map(n=>n.id);
   const keep=new Set(ids);
   setHighlight(keep,null);hideDetail();
@@ -753,7 +797,7 @@ function runSearch(v){
   const kw=nodes.filter(n=>n.id.toLowerCase().includes(v));
   /* exact single keyword → fly into its star system */
   if(kw.length===1&&kw[0].id.toLowerCase()===v){enterSystem(kw[0]);return;}
-  exitSystem();hideHUD();
+  exitSystem();hideHUD();sysPath=[];renderPath();
   const pm=PAPERS?PAPERS.filter(p=>p[0].toLowerCase().includes(v)):[];
   const pa=PAPERS?PAPERS.filter(p=>(p[4]||"").toLowerCase().includes(v)):[];
   const seen=new Set(pm.map(p=>p[1])), direct=pm.concat(pa.filter(p=>!seen.has(p[1])));
@@ -772,7 +816,8 @@ function runSearch(v){
   drKick.textContent="Search";
   openDrawer(`“${v}”`,"var(--ink)",ps,`<b>${ps.length}</b> papers · ${how}`);
 }
-function clearFocus(){exitSystem();hideHUD();focused=false;setHighlight(null);hideDetail();closeDrawer();
+function clearFocus(){exitSystem();hideHUD();sysPath=[];renderPath();
+  focused=false;setHighlight(null);hideDetail();closeDrawer();
   resetBtn.classList.remove("on");matchEl.textContent=nodes.length+" visible";
   document.getElementById("q").value="";}
 function resetView(){clearFocus();svg.transition().duration(700).call(zoom.transform,d3.zoomIdentity);}
