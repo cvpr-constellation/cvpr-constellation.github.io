@@ -50,6 +50,8 @@ Or fork this repo and enable GitHub Pages.
 
 ## Credits & license
 
+This is an unofficial visualization of publicly available CVPR 2026 paper metadata. It is not affiliated with or endorsed by CVPR, CVF, IEEE, or the IEEE Computer Society.
+
 Built by [Deokhyun Ahn](https://deo-ahn.github.io) ([@Deo-ahn](https://github.com/Deo-ahn)). Paper metadata © the Computer Vision Foundation.
 
 Code is [MIT](LICENSE) — use it freely.
