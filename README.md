@@ -1,0 +1,50 @@
+# CVPR 2026 · Research Constellation
+
+An interactive keyword co-occurrence map of all **4,068 accepted papers at CVPR 2026**, rendered as a navigable "star map" — keywords are stars, co-occurrences are the threads between them, and research communities form star systems.
+
+**Live demo → https://deo-ahn.github.io/cvpr2026-constellation/**
+
+![screenshot](docs/screenshot.jpg)
+
+## Features
+
+- **Constellation view** — 89 keywords sized by paper frequency, force-laid-out into 6 co-occurrence communities (Louvain), each with a name plate and a soft hull
+- **CVPR Topics view** — toggle to re-group the same topology by the official CVPR call-for-papers topics (27 topics, every keyword mapped)
+- **Star-system mode** — click any keyword to fly into its system: the keyword becomes the central star and its co-occurring keywords arrange into orbits (stronger link = closer orbit)
+- **Unified search** — one box matches keywords, paper titles **and authors**; an exact keyword query flies straight into its system
+- **Paper drawer** — every paper row shows title, full author list and keyword chips; hovering a row pings that paper's keywords on the map; titles link to CVF Open Access
+- **Visitor stats** — cumulative visitors, ~live viewers and top regions (serverless: [Abacus](https://abacus.jasoncameron.dev) counters + [ipwho.is](https://ipwho.is))
+- **Mobile-friendly** — responsive layout with a bottom-sheet paper list and a lite rendering tier (no SVG filters) for phones/tablets
+
+Everything is a single static `index.html` + two JSON files. No build step, no backend.
+
+## Run it yourself
+
+Any static file server works:
+
+```bash
+python3 -m http.server          # then open http://localhost:8000
+```
+
+Or fork this repo and enable GitHub Pages.
+
+## Rebuild the data (e.g. for another conference/year)
+
+1. Save the CVF Open Access listing, e.g. `https://openaccess.thecvf.com/CVPR2026?day=all` → `cvpr_oa.html`
+2. ```bash
+   pip install networkx
+   python scripts/build_graph.py cvpr_oa.html --venue "CVPR 2026"
+   ```
+3. This regenerates `graph.json` and `papers.json`. If the keyword set changes, adjust the community names (`COMM`) and the CVPR-topic mapping (`TOPIC_OF`) near the top of the script section in `index.html`.
+
+`papers.json` format: one compact record per paper — `[title, cvf_stub, [keyword_indices], community, "Author A, Author B, …"]`.
+
+## Tech
+
+[D3 v7](https://d3js.org) force simulation, vanilla JS, Fraunces + JetBrains Mono. Paper data scraped from [CVF Open Access](https://openaccess.thecvf.com).
+
+## Credits & license
+
+Built by [Deokhyun Ahn](https://deo-ahn.github.io) ([@Deo-ahn](https://github.com/Deo-ahn)). Paper metadata © the Computer Vision Foundation.
+
+Code is [MIT](LICENSE) — use it freely.
