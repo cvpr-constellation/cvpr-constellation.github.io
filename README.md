@@ -48,10 +48,14 @@ Or fork this repo and enable GitHub Pages.
 
 [D3 v7](https://d3js.org) force simulation, vanilla JS, Fraunces + JetBrains Mono. Paper data scraped from [CVF Open Access](https://openaccess.thecvf.com).
 
-## Credits & license
+## Credits, data & license
 
-This is an unofficial visualization of publicly available CVPR 2026 paper metadata. It is not affiliated with or endorsed by CVPR, CVF, IEEE, or the IEEE Computer Society.
+This is an **unofficial visualization** of publicly available CVPR 2026 paper metadata. It is not affiliated with or endorsed by CVPR, CVF, IEEE, or the IEEE Computer Society.
 
-Built by [Deokhyun Ahn](https://deo-ahn.github.io) ([@Deo-ahn](https://github.com/Deo-ahn)). Paper metadata © the Computer Vision Foundation.
+The site stores only bibliographic metadata (titles, author names, links); no abstracts or PDFs are hosted — every paper links to its official [CVF Open Access](https://openaccess.thecvf.com) page. Paper metadata © the Computer Vision Foundation. arXiv links via [paperswithcode.co](https://paperswithcode.co); world map from Natural Earth (public domain).
+
+Visitor stats are privacy-friendly: anonymous, aggregate, country-level counts only — no cookies, no IPs stored.
+
+Built by [Deokhyun Ahn](https://deo-ahn.github.io) ([@Deo-ahn](https://github.com/Deo-ahn)).
 
 Code is [MIT](LICENSE) — use it freely.
