@@ -14,8 +14,9 @@ An interactive keyword co-occurrence map of all **4,068 accepted papers at CVPR 
 - **Unified search** — one box matches keywords, paper titles **and authors**; an exact keyword query flies straight into its system
 - **Paper drawer** — every paper row shows title, full author list and keyword chips; hovering a row pings that paper's keywords on the map; titles link to CVF Open Access
 - **Hierarchical navigation** — drilling system-to-system builds a clickable breadcrumb (`all › Video › Grounding`); the parent system is pinned at 12 o'clock with a dashed ring
-- **Presentation filter** — 📢 oral / 🔥 highlight checkboxes re-weigh the whole topology and all paper lists (🏆 awards once announced)
-- **Workshops galaxies** — all 150 CVPR 2026 workshops grouped by the official site's categories; click a star to open the workshop page
+- **Presentation filter** — 📢 oral / 🔥 highlight / 🏆 award checkboxes re-weigh the whole topology and all paper lists
+- **Findings galaxy** — the 941 CVPR 2026 Findings papers as their own re-weighted sky
+- **Workshops galaxies** — all 150 CVPR 2026 workshops grouped by the official site's categories; stars with published proceedings list their papers, the rest link to the workshop page
 - **Light/dark theme** — ivory light theme with a toggle; defaults to the system color scheme
 - **Visitor stats** — cumulative visitors, ~live viewers, top regions and a mini world map (serverless: [Abacus](https://abacus.jasoncameron.dev) counters + [ipapi.co](https://ipapi.co))
 - **Mobile-friendly** — responsive layout with a bottom-sheet paper list and a lite rendering tier (no SVG filters) for phones/tablets
